@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # Name
     fileName = "plots"
     cutName = "cuts"
-    cutsOn = True
+    cutsOn = False
 
     # Cuts
     ISO_MAX = 0.1
