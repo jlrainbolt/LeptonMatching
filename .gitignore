@@ -40,6 +40,11 @@ Thumbs.db
 ##############
 *.root
 
+# VIM swap files #
+##################
+*.swp
+*.swo
+
 # LHE files #
 #############
 *.lhe
