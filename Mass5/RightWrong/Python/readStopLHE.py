@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     # Cuts
     ISO_MAX = 0.1
-    LEAD_PT_MIN = 25
+    PT1_MIN, PT2_MIN, PT3_MIN, PT4_MIN = 25, 10, 10, 5
     PT_MIN = 5
     LEAD_ETA_MAX = 2.1
     ETA_MAX = 2.4
@@ -109,8 +109,8 @@ if __name__ == '__main__':
             correctPair = True
 
         if cutsOn:
-            if (mus[0].Pt() > LEAD_PT_MIN and mus[1].Pt() > LEAD_PT_MIN
-                and mus[2].Pt() > PT_MIN and mus[3].Pt() > PT_MIN
+            if (mus[0].Pt() > PT1_MIN and mus[1].Pt() > PT2_MIN
+                and mus[2].Pt() > PT3_MIN and mus[3].Pt() > PT4_MIN
                 and abs(mus[0].Eta()) < LEAD_ETA_MAX and abs(mus[1].Eta()) < LEAD_ETA_MAX
                 and abs(mus[2].Eta()) < ETA_MAX and abs(mus[3].Eta()) < ETA_MAX
                 and (mus[0] + mus[1]).M() > M12_MIN

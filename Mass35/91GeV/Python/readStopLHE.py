@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # Name
     fileName = "plots"
     cutName = "cuts"
-    cutsOn = False
+    cutsOn = True
 
     # Cuts
     ISO_MAX = 0.1
@@ -103,8 +103,18 @@ if __name__ == '__main__':
                 mu_mother[mus[-1]] = p['mIdx']
                 mu_q[mus[-1]] = p['ID']
         mus.sort(key = rt.TLorentzVector.Pt, reverse = True)
-        if mu_q[mus[0]] * mu_q[mus[1]] > 0:
-                mus[1], mus[2] = mus[2], mus[1]
+
+        mu1_idx, mu2_idx = 0, 1
+        zMass, pairMass = 91.2, -1
+        for i in range(0, len(mus)):
+            for j in range(i, len(mus)):
+                if mu_q[mus[i]] * mu_q[mus[j]] < 0 and abs((mus[i] + mus[j]).M() - zMass) < abs(pairMass - zMass):
+                    mu1_idx = i
+                    mu2_idx = j
+                    pairMass = (mus[i] + mus[j]).M()
+        mus[0], mus[mu1_idx] = mus[mu1_idx], mus[0]
+        mus[1], mus[mu2_idx] = mus[mu2_idx], mus[1]
+
         if mu_mother[mus[0]] == mu_mother[mus[1]]:
             correctPair = True
 
