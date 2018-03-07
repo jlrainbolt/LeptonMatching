@@ -17,13 +17,13 @@ if __name__ == '__main__':
 
     # Cuts
     ISO_MAX = 0.1
-    PT1_MIN, PT2_MIN, PT3_MIN, PT4_MIN = 25, 10, 10, 5
+    PT1_MIN, PT2_MIN, PT3_MIN, PT4_MIN = 25, 25, 10, 5
     PT_MIN = 5
     LEAD_ETA_MAX = 2.1
     ETA_MAX = 2.4
     M12_MIN = 12
-    M4L_MIN = 80
-    M4L_MAX = 100
+    M4L_MIN = 60
+    M4L_MAX = 120
 
     # Histograms
     MLL_BINS, MLL_LOW, MLL_UP = 48, 0, 120

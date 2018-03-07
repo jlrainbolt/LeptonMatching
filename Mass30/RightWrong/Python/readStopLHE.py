@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     # Cuts
     ISO_MAX = 0.1
-    PT1_MIN, PT2_MIN, PT3_MIN, PT4_MIN = 25, 25, 10, 5
+    PT1_MIN, PT2_MIN, PT3_MIN, PT4_MIN = 25, 25, 5, 5
     PT_MIN = 5
     LEAD_ETA_MAX = 2.1
     ETA_MAX = 2.4

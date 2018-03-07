@@ -12,18 +12,18 @@ if __name__ == '__main__':
 
     # Name
     fileName = "plots"
-    cutName = "cuts"
-    cutsOn = True
+    cutName = ""
+    cutsOn = False
 
     # Cuts
     ISO_MAX = 0.1
-    PT1_MIN, PT2_MIN, PT3_MIN, PT4_MIN = 25, 25, 10, 5
+    LEAD_PT_MIN = 25
     PT_MIN = 5
     LEAD_ETA_MAX = 2.1
     ETA_MAX = 2.4
     M12_MIN = 12
-    M4L_MIN = 60
-    M4L_MAX = 120
+    M4L_MIN = 80
+    M4L_MAX = 100
 
     # Histograms
     MLL_BINS, MLL_LOW, MLL_UP = 48, 0, 120
@@ -78,13 +78,13 @@ if __name__ == '__main__':
     pT1_arr_w, pT2_arr_w, pT3_arr_w, pT4_arr_w = array('d'), array('d'), array('d'), array('d')
     x1_arr_r, x2_arr_r, x3_arr_r, x4_arr_r = array('d'), array('d'), array('d'), array('d')
     y1_arr_r, y2_arr_r, y3_arr_r, y4_arr_r = array('d'), array('d'), array('d'), array('d')
+#   eta1_arr, eta2_arr, eta3_arr, eta4_arr = array('d'), array('d'), array('d'), array('d')
     delr12_arr_r, delr34_arr_r, delr12_arr_s, delr34_arr_s, delr12_arr_w, delr34_arr_w = array('d'), array('d'), array('d'), array('d'), array('d'), array('d')
     dphi12_arr_r, dphi34_arr_r, dphi12_arr_s, dphi34_arr_s, dphi12_arr_w, dphi34_arr_w = array('d'), array('d'), array('d'), array('d'), array('d'), array('d')
     phi12_arr_r, phi34_arr_r, phi12_arr_s, phi34_arr_s, phi12_arr_w, phi34_arr_w = array('d'), array('d'), array('d'), array('d'), array('d'), array('d')
-    gam12_arr_r, gam34_arr_r, gam12_arr_s, gam34_arr_s, gam12_arr_w, gam34_arr_w = array('d'), array('d'), array('d'), array('d'), array('d'), array('d')
 
     # Loop over events
-    myLHEfile = LHEfile("../unweighted_events.lhe")
+    myLHEfile = LHEfile("unweighted_events.lhe")
     myLHEfile.setMax(100000)
     eventsReadIn = myLHEfile.readEvents()
     n_acc, n_corrPair, n_corrOrder, n_swapOrder, n_wrong = 0, 0, 0, 0, 0
@@ -109,8 +109,8 @@ if __name__ == '__main__':
             correctPair = True
 
         if cutsOn:
-            if (mus[0].Pt() > PT1_MIN and mus[1].Pt() > PT2_MIN
-                and mus[2].Pt() > PT3_MIN and mus[3].Pt() > PT4_MIN
+            if (mus[0].Pt() > LEAD_PT_MIN and mus[1].Pt() > LEAD_PT_MIN
+                and mus[2].Pt() > PT_MIN and mus[3].Pt() > PT_MIN
                 and abs(mus[0].Eta()) < LEAD_ETA_MAX and abs(mus[1].Eta()) < LEAD_ETA_MAX
                 and abs(mus[2].Eta()) < ETA_MAX and abs(mus[3].Eta()) < ETA_MAX
                 and (mus[0] + mus[1]).M() > M12_MIN
@@ -165,8 +165,6 @@ if __name__ == '__main__':
                     dphi34_arr_r.append(abs(mus[2].DeltaPhi(mus[3])))
                     phi12_arr_r.append((mus[0] + mus[1]).Phi())
                     phi34_arr_r.append((mus[2] + mus[3]).Phi())
-                    gam12_arr_r.append((mus[0] + mus[1]).Gamma())
-                    gam34_arr_r.append((mus[2] + mus[3]).Gamma())
 
                     delr_r.Fill((mus[0] + mus[1]).DeltaR(mus[2] + mus[3]))
                     dphi_r.Fill((mus[0] + mus[1]).DeltaPhi(mus[2] + mus[3]))
@@ -200,8 +198,6 @@ if __name__ == '__main__':
                     dphi34_arr_s.append(abs(mus[2].DeltaPhi(mus[3])))
                     phi12_arr_s.append((mus[0] + mus[1]).Phi())
                     phi34_arr_s.append((mus[2] + mus[3]).Phi())
-                    gam12_arr_s.append((mus[0] + mus[1]).Gamma())
-                    gam34_arr_s.append((mus[2] + mus[3]).Gamma())
 
                     delr_s.Fill((mus[0] + mus[1]).DeltaR(mus[2] + mus[3]))
                     dphi_s.Fill((mus[0] + mus[1]).DeltaPhi(mus[2] + mus[3]))
@@ -235,8 +231,6 @@ if __name__ == '__main__':
                 dphi34_arr_w.append(abs(mus[2].DeltaPhi(mus[3])))
                 phi12_arr_w.append((mus[0] + mus[1]).Phi())
                 phi34_arr_w.append((mus[2] + mus[3]).Phi())
-                gam12_arr_w.append((mus[0] + mus[1]).Gamma())
-                gam34_arr_w.append((mus[2] + mus[3]).Gamma())
 
                 delr_w.Fill((mus[0] + mus[1]).DeltaR(mus[2] + mus[3]))
                 dphi_w.Fill((mus[0] + mus[1]).DeltaPhi(mus[2] + mus[3]))
@@ -696,31 +690,6 @@ if __name__ == '__main__':
     graph_line.Draw("L")
     lgnd2.Draw()
 
-    canvas_gamma = rt.TCanvas("Gamma", "Gamma", 800, 600)
-    canvas_gamma.cd()
-    graph_gamma_w = rt.TGraph(n_wrong, gam12_arr_w, gam34_arr_w)
-    graph_gamma_w.GetXaxis().SetTitle('#gamma_{12}(Z)')
-    graph_gamma_w.GetYaxis().SetTitle('#gamma_{34}(U)')
-    graph_gamma_w.SetMarkerStyle(rt.kFullCircle)
-    graph_gamma_w.SetMarkerSize(mSize)
-    graph_gamma_w.SetMarkerColor(rt.kRed)
-    graph_gamma_w.Draw("AP")
-    if n_corrOrder > 0:
-        graph_gamma_r = rt.TGraph(n_corrOrder, gam12_arr_r, gam34_arr_r)
-        graph_gamma_r.SetMarkerStyle(rt.kFullCircle)
-        graph_gamma_r.SetMarkerSize(mSize)
-        graph_gamma_r.SetMarkerColor(rt.kBlue)
-        graph_gamma_r.Draw("P")
-        graph_gamma_w.Draw("P")
-    if n_swapOrder > 0:
-        graph_gamma_s = rt.TGraph(n_swapOrder, gam12_arr_s, gam34_arr_s)
-        graph_gamma_s.SetMarkerStyle(rt.kFullCircle)
-        graph_gamma_s.SetMarkerSize(mSize)
-        graph_gamma_s.SetMarkerColor(rt.kGreen)
-        graph_gamma_s.Draw("P")
-    graph_line.Draw("L")
-    lgnd2.Draw()
-
 #   canvas_phi = rt.TCanvas("Phi", "Phi", 800, 600)
 #   canvas_phi.cd()
 #   graph_phi_w = rt.TGraph(n_wrong, phi12_arr_w, phi34_arr_w)
@@ -908,7 +877,6 @@ if __name__ == '__main__':
     canvas_pT23.Write()
     canvas_delr.Write()
     canvas_dphi.Write()
-    canvas_gamma.Write()
 #   canvas_phi.Write()
 
 #   canvas_ZpT.Write()

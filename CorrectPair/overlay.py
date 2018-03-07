@@ -135,15 +135,3 @@ if __name__ == '__main__':
             graphs[j][i].Write()
     saveFile.Close()
     print("Created file", saveFile.GetName())
-
-    # Clean house!
-    for l in hists:
-        for h in l:
-            del h
-    for l in graphs:
-        for g in l:
-            del g
-    for c in h_canvases:
-        del c
-    for c in g_canvases:
-        del c
