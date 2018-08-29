@@ -8,6 +8,20 @@ from LHEevent import *
 from LHEfile import *
 import plotTools
 
+
+def GetBoosted(p4_, beta):
+    p4 = p4_.Clone()
+    p4.Boost(beta)
+    return p4
+
+
+def GetSum(p4_list):
+    p4 = rt.TLorentzVector()
+    for p4_ in p4_list:
+        p4 += p4_
+    return p4
+
+
 if __name__ == '__main__':
 
 
@@ -16,69 +30,110 @@ if __name__ == '__main__':
     #  INITIALIZE  #
     ################
 
-    printEvents = False
-    printEvery = 100
-
     lheName = "unweighted_events.lhe"
-    n_max = 100000
+    n_max = 100
+    nbins = 100
+
+    pi_tol = 0.0001
 
 
     # Counters
-    n_evts, n_2mu2e = 0, 0
+    n_4mu = 0
 
 
-    # Energy of each lepton                                         # looking at 2mu2e events
+    # Momenta and energies
 
     # Z REST FRAME
-    nbins, xlo, xup = 100, 0, 50
-    E_mu1 = rt.TH1F("E_mu1", "E_{\mu1}", nbins, xlo, xup);          # leading mu
-    E_mu2 = rt.TH1F("E_mu2", "E_{\mu2}", nbins, xlo, xup);          # subleading mu
-    E_e1 = rt.TH1F("E_e1", "E_{e1}", nbins, xlo, xup);              # leading e
-    E_e2 = rt.TH1F("E_e2", "E_{e2}", nbins, xlo, xup);              # subleading e
 
-    nbins, xlo, xup = 100, 0, 100
-    E_mm = rt.TH1F("E_mm", "E_{\mu1,\mu2}", nbins, xlo, xup);       # muon pair
-    E_ee = rt.TH1F("E_ee", "E_{e1,e2}", nbins, xlo, xup);           # electron pair
-    E_trio = rt.TH1F("E_trio", "E_{\mu2,e1,e2}", nbins, xlo, xup);  # "trailing trio"
+    # Pair "a" leptons (high mass)
+    xlo, xup = 0, 50
+    P_lep_a1 = rt.TH1D("P_lep_a1", "P_{a1}", nbins, xlo, xup);
+    E_lep_a1 = rt.TH1D("E_lep_a1", "E_{a1}", nbins, xlo, xup);
+#   P_lep_a2 = rt.TH1D("P_lep_a2", "P_{a2}", nbins, xlo, xup);
+#   E_lep_a2 = rt.TH1D("E_lep_a2", "E_{a2}", nbins, xlo, xup);
+#   xlo, xup = 0, 100
+#   P_pair_a = rt.TH1D("P_pair_a", "P_{a1,a2}", nbins, xlo, xup);
+#   E_pair_a = rt.TH1D("E_pair_a", "E_{a1,a2}", nbins, xlo, xup);
+#   M_pair_a = rt.TH1D("M_pair_a", "M_{a1,a2}", nbins, xlo, xup);
 
-    nbins, xlo, xup = 100, 80, 100
-    M_Z_pair = rt.TH1F("M_Z_pair", "E_{\mu1,\mu2} + E_{e1,e2}", nbins, xlo, xup); # reconstruct m_Z
-    M_Z_trio = rt.TH1F("M_Z_trio", "E_{\mu1} + E_{\mu2,e1,e2}", nbins, xlo, xup); # reconstruct m_Z
+#   # Pair "b" leptons (low mass)
+#   P_lep_b1 = rt.TH1D("P_lep_b1", "P_{b1}", nbins, xlo, xup);
+#   E_lep_b1 = rt.TH1D("E_lep_b1", "E_{b1}", nbins, xlo, xup);
+#   P_lep_b2 = rt.TH1D("P_lep_b2", "P_{b2}", nbins, xlo, xup);
+#   E_lep_b2 = rt.TH1D("E_lep_b2", "E_{b2}", nbins, xlo, xup);
+    xlo, xup = 0, 100
+#   P_pair_b = rt.TH1D("P_pair_b", "P_{b1,b2}", nbins, xlo, xup);
+#   E_pair_b = rt.TH1D("E_pair_b", "E_{b1,b2}", nbins, xlo, xup);
+#   M_pair_b = rt.TH1D("M_pair_b", "M_{b1,b2}", nbins, xlo, xup);
 
+    # "Trailing trio"
+    P_trio = rt.TH1D("P_trio", "P_{a2,b1,b2}", nbins, xlo, xup);
+    E_trio = rt.TH1D("E_trio", "E_{a2,b1,b2}", nbins, xlo, xup);
+    M_trio = rt.TH1D("M_trio", "M_{a2,b1,b2}", nbins, xlo, xup);
 
 
 
     # Angles between pairs
-    nbins, xlo, xup = 100, 0, 3.15
+    xlo, xup = 0, 3.2
 
     # Z REST FRAME
-    theta_Z = rt.TH1F("theta_Z", "theta_{Z}", nbins, xlo, xup);         # muon 1 & trio
-    theta_3 = rt.TH1F("theta_3", "theta_{3}", nbins, xlo, xup);         # muon 2 & electron pair
-    theta_e = rt.TH1F("theta_e", "theta_{e}", nbins, xlo, xup);         # electron 1 & electron 2
+    theta_Z = rt.TH1D("theta_Z", "\\theta_{Z}", nbins, xlo, xup);
+#   theta_3 = rt.TH1D("theta_3", "\\theta_{3}", nbins, xlo, xup);
+#   theta_b = rt.TH1D("theta_b", "\\theta_{b}", nbins, xlo, xup);
 
-    # "TRAILING TRIO" REST FRAME (prime)
-    theta_3_p = rt.TH1F("theta_3_p", "theta'_{3}", nbins, xlo, xup);    # muon 2 & electron pair
-    theta_e_p = rt.TH1F("theta_e_p", "theta'_{e}", nbins, xlo, xup);    # electron 1 & electron 2
+#   # "TRAILING TRIO" REST FRAME (prime)
+#   theta_3_p = rt.TH1D("theta_3_p", "\\theta'_{3}", nbins, xlo, xup);
+#   theta_b_p = rt.TH1D("theta_b_p", "\\theta'_{b}", nbins, xlo, xup);
 
-    # ELECTRON PAIR REST FRAME (double prime)
-    theta_e_pp = rt.TH1F("theta_e_pp", "theta''_{e^}", nbins, xlo, xup);# electron 1 & electron 2
+#   # ELECTRON PAIR REST FRAME (double prime)
+#   theta_b_pp = rt.TH1D("theta_b_pp", "\\theta''_{b}", nbins, xlo, xup);
+
+
+#   
+#   # Derived quantities
+#  
+#   # Fraction of energy to lep b2 or pair b
+#   xlo, xup = 0, 1
+#   P_frac_lep_a2 = rt.TH1D("P_frac_lep_a2", "P_{a2}/P_{a1}", nbins, xlo, xup)
+#   E_frac_lep_a2 = rt.TH1D("E_frac_lep_a2", "E_{a2}/E_{a1}", nbins, xlo, xup)
+#   P_frac_pair_b = rt.TH1D("P_frac_pair_b", "P_{b1,b2}/P_{a1}", nbins, xlo, xup)
+#   E_frac_pair_b = rt.TH1D("E_frac_pair_b", "E_{b1,b2}/E_{a1}", nbins, xlo, xup)
+
+#   # "Difference" between lep a2 and pair b energy
+#   xlo, xup = -1, 1
+#   P_diff = rt.TH1D("P_diff", "(P_{a2} - P_{b1,b2})/P_{a1}", nbins, xlo, xup)
+#   E_diff = rt.TH1D("E_diff", "(E_{a2} - E_{b1,b2})/E_{a1}", nbins, xlo, xup)
+#   
+
+#   
+#   # 2D histograms
+#   nbins = 50
+
+#   # Lep a1 E vs. theta_3
+#   xlo, xup, ylo, yup = 0, 3.15, 20, 50
+#   E_lep_a1__theta_3 = rt.TH2D("E_lep_a1__theta_3", "E_{a1} vs. \\theta_{3}", \
+#           nbins, xlo, xup, nbins, ylo, yup)
+#   xlo, xup = 0, 1
+#   E_lep_a1__cos2_3 = rt.TH2D("E_lep_a1__cos2_3", "E_{a1} vs. cos^{2}(\\theta_{3}/2)", \
+#           nbins, xlo, xup, nbins, ylo, yup)
+
+#   # Lep a2 E vs. theta_3
+#   xlo, xup, ylo, yup = 0, 3.15, 0, 50
+#   E_lep_a2__theta_3 = rt.TH2D("E_lep_a2__theta_3", "E_{a2} vs. \\theta_{3}", \
+#           nbins, xlo, xup, nbins, ylo, yup)
+#   
+#   # "Difference" between lep a2 and pair b energy vs. cos(theta_3)
+#   ylo, yup = -1, 1
+#   E_diff__theta_3 = rt.TH2D("E_diff__theta_3", "(E_{a2} - E_{b1,b2})/E_{a1} vs. \\theta_{3}", \
+#           nbins, xlo, xup, nbins, ylo, yup)
+#   xlo, xup = -1, 1
+#   E_diff__cos_3 = rt.TH2D("E_diff__cos_3", "(E_{a2} - E_{b1,b2})/E_{a1} vs. cos(\\theta_{3})", \
+#           nbins, xlo, xup, nbins, ylo, yup)
+#   E_diff__tan_3 = rt.TH2D("E_diff__tan_3", "(E_{a2} - E_{b1,b2})/E_{a1} vs. tan(\\theta_{3})", \
+#           nbins, xlo, xup, nbins, ylo, yup)
 
 
 
-    # Trig
-    nbins = 100
-#FIXME (look at sin)
-    # Z REST FRAME
-    theta_Z = rt.TH1F("theta_Z", "theta_{Z}", nbins, xlo, xup);         # muon 1 & trio
-    theta_3 = rt.TH1F("theta_3", "theta_{3}", nbins, xlo, xup);         # muon 2 & electron pair
-    theta_e = rt.TH1F("theta_e", "theta_{e}", nbins, xlo, xup);         # electron 1 & electron 2
-
-    # "TRAILING TRIO" REST FRAME (prime)
-    theta_3_p = rt.TH1F("theta_3_p", "theta'_{3}", nbins, xlo, xup);    # muon 2 & electron pair
-    theta_e_p = rt.TH1F("theta_e_p", "theta'_{e}", nbins, xlo, xup);    # electron 1 & electron 2
-
-    # ELECTRON PAIR REST FRAME (double prime)
-    theta_e_pp = rt.TH1F("theta_e_pp", "theta''_{e^}", nbins, xlo, xup);# electron 1 & electron 2
 
 
 
@@ -87,15 +142,6 @@ if __name__ == '__main__':
     ################
     #  GET EVENTS  #
     ################
-
-    if printEvents:
-        print("\nEVENTS (1 IN ", printEvery, ")", sep = "")
-        print("=================================================================")
-        print("Lookup (l1 px)\t", " First decay", "\t Second decay", sep = "\t")
-        print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
-    else:
-        print("\nRunning...", end = "")
-        sys.stdout.flush()
 
     myLHEfile = LHEfile(lheName)
     myLHEfile.setMax(n_max)
@@ -119,62 +165,73 @@ if __name__ == '__main__':
         # Get leptons
         particles = myLHEevent.Particles
         elecs, muons = [], []
+        elecs_q, muons_q = {}, {}
 
         for i in range(0, len(particles)):
             p = particles[i]
             if abs(p['ID']) == 11:
                 elecs.append(rt.TLorentzVector(p['Px'], p['Py'], p['Pz'], p['E']))
+                elecs_q[elecs[-1]] = p['Q']
             elif abs(p['ID']) == 13:
                 muons.append(rt.TLorentzVector(p['Px'], p['Py'], p['Pz'], p['E']))
+                muons_q[muons[-1]] = p['Q']
 
 
-        # Accept only 2mu2e events (for now)
-        if len(elecs) != 2 or len(muons) != 2:
-            continue;
-
-        muon_pair = muons[0] + muons[1]
-        elec_pair = elecs[0] + elecs[1]
-
-        if (muon_pair.M() < elec_pair.M()):
-            continue;
-        
-        n_2mu2e += 1;
+        # Accept only 4mu events (for now)
+        if len(muons) != 4:
+            continue
+    # elif len(muons) == 4:
+        rem_leps = muons
+        leps_q = muons_q
+        n_4mu += 1
 
 
-        # Check leading/subleading
-        muon1 = muons[0]
-        muon2 = muons[1]
-        if muon1.E() < muon2.E():
-            muon1, muon2 = muon2, muon1
-
-        elec1 = elecs[0]
-        elec2 = elecs[1]
-        if elec1.E() < elec2.E():
-            elec1, elec2 = elec2, elec1
-
-        trio = muon2 + elec_pair
-
+        # Order by energy and assign lep a1
+        rem_leps.sort(key=lambda fourvec: fourvec.E(), reverse=True)
+        lep_a1 = rem_leps.pop(0)
 
         
+        # Assign "trailing trio", get theta_Z
+        trio = GetSum(rem_leps)
+        angle_Z = lep_a1.Angle(trio.Vect())
+
+        if (math.fabs(angle_Z - math.pi) > pi_tol):
+            print("Problem in S")
+
+
+
         ################
         #     BOOST    #
         ################
 
+        # Primed ("trailing trio") frame
         boost_p = -trio.BoostVector()
-        muon2_p = muon2.Clone()
-        muon2_p.Boost(boost_p)
-        elec1_p = elec1.Clone()
-        elec1_p.Boost(boost_p)
-        elec2_p = elec2.Clone()
-        elec2_p.Boost(boost_p)
-        elec_pair_p = elec1_p + elec2_p
+        lep_a1_p = GetBoosted(lep_a1, boost_p)
+
+        for i in range(len(rem_leps)):
+            # Make sure a2 candidate has opposite charge (remove later as sanity check?)
+            if leps_q[rem_leps[i]] != leps_q[lep_a1]:
+                rem_leps_ = [GetBoosted(lep, boost_p) for lep in rem_leps]
+                lep_a2_ = rem_leps_.pop(i)
+                pair_b_ = GetSum(rem_leps_)
+#               print(lep_a2_.P(), pair_b_.P(), lep_a2_.Angle(pair_b_.Vect()))
+                print(rem_leps[i].E(), rem_leps_[0].Angle(rem_leps_[1].Vect()))
+        print("")
 
 
-        boost_pp = -elec_pair_p.BoostVector()
-        elec1_pp = elec1_p.Clone()
-        elec1_pp.Boost(boost_pp)
-        elec2_pp = elec2_p.Clone()
-        elec2_pp.Boost(boost_pp)
+
+#       muon2_p = GetBoosted(muon2, boost_p)
+#       muon_pair_p = muon1_p + muon2_p
+
+#       elec1_p = GetBoosted(elec1, boost_p)
+#       elec2_p = GetBoosted(elec2, boost_p)
+#       elec_pair_p = elec1_p + elec2_p
+
+#       
+#       # Double primed (electron pair) frame
+#       boost_pp = -elec_pair_p.BoostVector()
+#       elec1_pp = GetBoosted(elec1_p, boost_pp)
+#       elec2_pp = GetBoosted(elec2_p, boost_pp)
 
 
 
@@ -182,62 +239,116 @@ if __name__ == '__main__':
         #  FILL HISTS  #
         ################
 
-        E_mu1.Fill(muon1.E())
-        E_mu2.Fill(muon2.E())
-        E_e1.Fill(elec1.E())
-        E_e2.Fill(elec2.E())
+        # Momentum and energy
+        P_lep_a1.Fill(lep_a1.P())
+        E_lep_a1.Fill(lep_a1.E())
+#       P_lep_a2.Fill(muon2.P())
+#       E_lep_a2.Fill(muon2.E())
+#       P_lep_b1.Fill(elec1.P())
+#       E_lep_b1.Fill(elec1.E())
+#       P_lep_b2.Fill(elec2.P())
+#       E_lep_b2.Fill(elec2.E())
 
-        E_mm.Fill(muon_pair.E())
-        E_ee.Fill(elec_pair.E())
+#       P_pair_a.Fill(muon_pair.P())
+#       E_pair_a.Fill(muon_pair.E())
+#       M_pair_a.Fill(muon_pair.M())
+#       P_pair_b.Fill(elec_pair.P())
+#       E_pair_b.Fill(elec_pair.E())
+#       M_pair_b.Fill(elec_pair.M())
+        P_trio.Fill(trio.P())
         E_trio.Fill(trio.E())
+        M_trio.Fill(trio.M())
 
-        M_Z_pair.Fill(muon_pair.E() + elec_pair.E());
-        M_Z_trio.Fill(trio.E() + muon1.E());
 
-        theta_Z.Fill(muon1.Angle(trio.Vect()))
-        theta_3.Fill(muon2.Angle(elec_pair.Vect()))
-        theta_e.Fill(elec1.Angle(elec2.Vect()))
+        # Angles
+#       angle_3 = muon2.Angle(elec_pair.Vect())
+#       angle_b = elec1.Angle(elec2.Vect())
+#       angle_3_p = muon2_p.Angle(elec_pair_p.Vect())
+#       angle_b_p = elec1_p.Angle(elec2_p.Vect())
+#       angle_b_pp = elec1_pp.Angle(elec2_pp.Vect())
 
-        theta_3_p.Fill(muon2_p.Angle(elec_pair_p.Vect()))
-        theta_e_p.Fill(elec1_p.Angle(elec2_p.Vect()))
+        theta_Z.Fill(angle_Z)
+#       theta_3.Fill(angle_3)
+#       theta_b.Fill(angle_b)
+#       theta_3_p.Fill(angle_3_p)
+#       theta_b_p.Fill(angle_b_p)
+#       theta_b_pp.Fill(angle_b_pp)
 
-        theta_e_pp.Fill(elec1_pp.Angle(elec2_pp.Vect()))
 
-        dot_Z.Fill(muon1.Dot(trio) / ()
-        dot_3.Fill(muon2.Dot(elec_pair.Vect()))
-        dot_e.Fill(elec1.Angle(elec2.Vect()))
+#       # Derived quantities
+#       E_fraction_lep_a2 = muon2.E() / muon1.E()
+#       P_fraction_lep_a2 = muon2.P() / muon1.P()
+#       E_fraction_pair_b = elec_pair.E() / muon1.E()
+#       P_fraction_pair_b = elec_pair.P() / muon1.P()
+#       E_difference = (muon2.E() - elec_pair.E()) / muon1.E()
+#       P_difference = (muon2.P() - elec_pair.P()) / muon1.P()
 
+#       E_frac_lep_a2.Fill(E_fraction_lep_a2)
+#       P_frac_lep_a2.Fill(P_fraction_lep_a2)
+#       E_frac_pair_b.Fill(E_fraction_pair_b)
+#       P_frac_pair_b.Fill(P_fraction_pair_b)
+#       E_diff.Fill(E_difference)
+#       P_diff.Fill(P_difference)
+
+
+#       # 2D hists
+#       E_lep_a1__theta_3.Fill(angle_3, muon1.E())
+#       E_lep_a1__cos2_3.Fill(math.cos(angle_3 / 2)**2, muon1.E())
+#       E_lep_a2__theta_3.Fill(angle_3, muon2.E())
+#       E_diff__theta_3.Fill(angle_3, E_difference)
+#       E_diff__cos_3.Fill(math.cos(angle_3), E_difference)
+#       E_diff__tan_3.Fill(math.tan(angle_3), E_difference)
 
 
 
         del oneEvent, myLHEevent
-    if not printEvents:
-        print("done!")
-
-    print(n_2mu2e, "2mu2e decays")
+    print(n_4mu, "4mu decays")
 
 
     ################
     # SAVE TO FILE #
     ################
 
-    outFile = rt.TFile("2m2e.root", "RECREATE")
+    outFile = rt.TFile("4m.root", "RECREATE")
 
-    E_mu1.Write()
-    E_mu2.Write()
-    E_e1.Write()
-    E_e2.Write()
-    E_mm.Write()
-    E_ee.Write()
+    P_lep_a1.Write()
+    E_lep_a1.Write()
+#   P_lep_a2.Write()
+#   E_lep_a2.Write()
+#   P_lep_b1.Write()
+#   E_lep_b1.Write()
+#   P_lep_b2.Write()
+#   E_lep_b2.Write()
+
+#   P_pair_a.Write()
+#   E_pair_a.Write()
+#   M_pair_a.Write()
+#   P_pair_b.Write()
+#   E_pair_b.Write()
+#   M_pair_b.Write()
+    P_trio.Write()
     E_trio.Write()
-    M_Z_pair.Write()
-    M_Z_trio.Write()
+    M_trio.Write()
 
     theta_Z.Write()
-    theta_3.Write()
-    theta_e.Write()
-    theta_3_p.Write()
-    theta_e_p.Write()
-    theta_e_pp.Write()
+#   theta_3.Write()
+#   theta_b.Write()
+#   theta_3_p.Write()
+#   theta_b_p.Write()
+#   theta_b_pp.Write()
+
+#   E_frac_lep_a2.Write()
+#   P_frac_lep_a2.Write()
+#   E_frac_pair_b.Write()
+#   P_frac_pair_b.Write()
+#   E_diff.Write()
+#   P_diff.Write()
+
+#   E_lep_a1__theta_3.Write()
+#   E_lep_a1__cos2_3.Write()
+#   E_lep_a2__theta_3.Write()
+#   E_diff__theta_3.Write()
+#   E_diff__cos_3.Write()
+#   E_diff__tan_3.Write()
 
     outFile.Close()

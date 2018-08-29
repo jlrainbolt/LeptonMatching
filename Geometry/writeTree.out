@@ -1,0 +1,9 @@
+Looping over 100000 events...done!
+
+Found:
+     25401 4mu decays
+     24413 2mu2e decays
+     24559 2e2mu decays
+     25627 4e decays
+
+Wrote events to Zto4l_decays.root
