@@ -33,6 +33,7 @@
 ._*
 .Spotlight-V100
 .Trashes
+*/.ipynb_checkpoints
 ehthumbs.db
 Thumbs.db
 
@@ -48,3 +49,7 @@ Thumbs.db
 # LHE files #
 #############
 *.lhe
+
+# Old crap #
+############
+Mass*
