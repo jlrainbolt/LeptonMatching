@@ -20,6 +20,17 @@ def GetSum(p4_list):
     return p4
 
 
+def sign(x):
+    if x > 0:
+        return 1
+    elif x < 0:
+        return -1
+    elif x == 0:
+        return 0
+    else:
+        return x
+
+
 if __name__ == '__main__':
 
 
@@ -113,11 +124,11 @@ if __name__ == '__main__':
             p = particles[i]
             if abs(p['ID']) == 11:
                 elecs.append(rt.TLorentzVector(p['Px'], p['Py'], p['Pz'], p['E']))
-                leptons_q[elecs[-1]] = int(p['Q'])
+                leptons_q[elecs[-1]] = sign(p['ID'])
                 leptons_id[elecs[-1]] = 11
             elif abs(p['ID']) == 13:
                 muons.append(rt.TLorentzVector(p['Px'], p['Py'], p['Pz'], p['E']))
-                leptons_q[muons[-1]] = int(p['Q'])
+                leptons_q[muons[-1]] = sign(p['ID'])
                 leptons_id[muons[-1]] = 13
 
 
